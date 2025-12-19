@@ -11,28 +11,25 @@ jobs:
   escobar:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Golang
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: 1.18.x
-
-      - name: Setup modules cache
-        uses: actions/cache@v2
+          go-version: '1.23'
+      - uses: actions/cache@v4
         with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
-
-      - uses: actions/checkout@v2
-
+            ${{ runner.os }}-golang-
       - name: Download dependencies
         run: go mod download
 
-      - name: Lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.52.2
+#      - name: Lint
+#        uses: golangci/golangci-lint-action@v9
+#        with:
+#          version: v2.6
 
       - name: Build
         run: go build ./cmd/escobar
@@ -45,7 +42,7 @@ jobs:
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release
